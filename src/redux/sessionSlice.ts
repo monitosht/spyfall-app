@@ -5,21 +5,26 @@ interface SessionState {
     gamepin: string;
 }
 
+const initialState = {
+    nickname: '',
+    gamepin: '',
+}
+
 const sessionSlice = createSlice({
     name: 'session',
-    initialState: {
-        nickname: "",
-        gamepin: "",
-    } as SessionState,
+    initialState: initialState as SessionState,
     reducers: {
         setNickname: (state, action) => {
             state.nickname = action.payload
         },
         setGamepin: (state, action) => {
             state.gamepin = action.payload
+        },
+        resetDefaults: () => {
+            return initialState
         }
     },
 });
 
-export const { setNickname, setGamepin } = sessionSlice.actions
+export const { setNickname, setGamepin, resetDefaults } = sessionSlice.actions
 export default sessionSlice.reducer

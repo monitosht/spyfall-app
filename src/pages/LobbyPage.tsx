@@ -1,10 +1,25 @@
 import { NavLink } from 'react-router'
 import '../App.css'
 import { useAppSelector } from '../redux/hooks';
+import { child, get, ref, set } from 'firebase/database';
+import { database } from '../database';
 
 function LobbyPage() {
   const nickname = useAppSelector((state) => state.session.nickname);
-  const gamepin = useAppSelector((state) => state.session.gamepin);
+  const gamepin = useAppSelector((state) => state.session.gamepin);  
+  
+  const clearDatabase = () => {
+    get(child(ref(database), 'active-games/' + gamepin))
+    .then((snapshot) => {
+      if(snapshot.val().hostname === nickname) {
+        set(ref(database, 'active-games/' + gamepin), null);
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+    console.log('cleared db');
+  }
     
   return (
     <div className='h-screen flex flex-col justify-center items-center'>
@@ -18,9 +33,12 @@ function LobbyPage() {
         <NavLink 
             to='/' 
         >
-            <button className='w-full border rounded-md p-1.5 border-slate-400 bg-slate-300 hover:bg-slate-500 hover:text-white'>
-                Exit
-            </button>
+          <button 
+            className='w-full border rounded-md p-1.5 border-slate-400 bg-slate-300 hover:bg-slate-500 hover:text-white'              
+            onClick={clearDatabase}
+          >
+            Exit
+          </button>
         </NavLink>
       </div>
     </div>

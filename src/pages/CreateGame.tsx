@@ -3,19 +3,28 @@ import '../App.css'
 import { useState } from 'react';
 import { setGamepin, setNickname } from '../redux/sessionSlice';
 import { useAppDispatch } from '../redux/hooks';
+import { database } from '../database';
+import { set, ref } from 'firebase/database';
 
 function CreateGame() {
     const dispatch = useAppDispatch();
 
     const [name, setName] = useState('');
 
-    const handleClick = () => {
-        dispatch(setNickname(name));
-        dispatch(setGamepin(generateGamepin()));
+    const gamepin = Math.floor(Math.random() * 8999 + 1000);
+    
+    const writeToDatabase = (gamepin: number) => {
+        set(ref(database, 'active-games/' + gamepin), {
+            gamepin: gamepin,
+            hostname: name
+        });        
+        console.log('wrote to db');
     }
 
-    const generateGamepin = () => {
-        return Math.floor(Math.random() * 8999 + 1000);
+    const handleClick = () => {
+        dispatch(setNickname(name));
+        dispatch(setGamepin(gamepin));
+        writeToDatabase(gamepin);
     }
     
   return (
@@ -31,7 +40,7 @@ function CreateGame() {
       </div>
       <div className='flex justify-items-center flex-col w-28 space-y-4 mx-auto'>
         <NavLink 
-            to='/lobby' 
+            to={`/lobby/${gamepin}`} 
         >
             <button 
                 className='w-full border rounded-md p-1.5 border-slate-400 bg-slate-300 hover:bg-slate-500 hover:text-white disabled:bg-slate-600 disabled:border-slate-700 disabled:hover:text-black'
@@ -44,7 +53,9 @@ function CreateGame() {
         <NavLink 
             to='/' 
         >
-            <button className='w-full border rounded-md p-1.5 border-slate-400 bg-slate-300 hover:bg-slate-500 hover:text-white'>
+            <button 
+                className='w-full border rounded-md p-1.5 border-slate-400 bg-slate-300 hover:bg-slate-500 hover:text-white'
+            >
                 Back
             </button>
         </NavLink>

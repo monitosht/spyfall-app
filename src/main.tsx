@@ -18,6 +18,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path='/create' element={<CreateGame />} />
         <Route path='/join' element={<JoinGame />} />
         <Route path='/lobby' element={<LobbyPage />} />
+        <Route path='/lobby/:gamepin' element={<LobbyPage />} />
       </Routes>
       </BrowserRouter>
     </Provider>

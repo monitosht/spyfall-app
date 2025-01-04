@@ -1,7 +1,17 @@
 import { NavLink } from 'react-router'
 import './App.css'
+import { useEffect } from 'react'
+import { useAppDispatch } from './redux/hooks';
+import { resetDefaults } from './redux/sessionSlice';
 
 function App() {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(resetDefaults());
+  // eslint-disable-next-line
+  }, []);
+
   return (
     <div className='h-screen flex flex-col justify-center items-center'>
       <img src='/spy_icon.svg' className='w-48 h-48'></img>
