@@ -1,12 +1,29 @@
-import { NavLink } from 'react-router'
-import '../App.css'
-import { useAppSelector } from '../redux/hooks';
-import { child, get, ref, set } from 'firebase/database';
 import { database } from '../database';
+import { child, get, ref, set } from 'firebase/database';
+import { useAppSelector } from '../redux/hooks';
+import BackButton from '../components/BackButton';
+import '../App.css'
+import NextButton from '../components/NextButton';
+import { useEffect, useState } from 'react';
 
 function LobbyPage() {
   const nickname = useAppSelector((state) => state.session.nickname);
-  const gamepin = useAppSelector((state) => state.session.gamepin);  
+  const gamepin = useAppSelector((state) => state.session.gamepin);
+
+  const [hostPermissions, setHostPermissions] = useState(false);
+
+  useEffect(() => {
+    get(child(ref(database), 'active-games/' + gamepin))
+    .then((snapshot) => {
+      if(snapshot.val().hostname === nickname) {
+        setHostPermissions(true);
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  // eslint-disable-next-line
+  }, []);
   
   const clearDatabase = () => {
     get(child(ref(database), 'active-games/' + gamepin))
@@ -30,16 +47,21 @@ function LobbyPage() {
         <p className='text-2xl text-white'><b>Gamepin:</b> {gamepin}</p>  
       </div>
       <div className='flex justify-items-center flex-col w-28 space-y-4 mx-auto'>
-        <NavLink 
-            to='/' 
-        >
-          <button 
-            className='w-full border rounded-md p-1.5 border-slate-400 bg-slate-300 hover:bg-slate-500 hover:text-white'              
-            onClick={clearDatabase}
-          >
-            Exit
-          </button>
-        </NavLink>
+        {
+          hostPermissions
+          ? <NextButton
+              text='Start Game'
+            />
+          : <NextButton
+              text='Waiting for Host'
+              disabledCondition={true}
+            />
+        }
+        <BackButton
+          text='Exit'
+          linkTo='/'
+          handleClick={clearDatabase}
+        />
       </div>
     </div>
   )
