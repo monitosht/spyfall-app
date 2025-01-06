@@ -19,7 +19,8 @@ function CreateGame() {
         set(ref(database, 'active-games/' + gamepin), {
             gamepin: gamepin,
             host: identity,
-            players: [identity]
+            players: [identity],
+            status: 'lobby'
         });
     }
 

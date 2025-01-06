@@ -58,6 +58,9 @@ function LobbyPage() {
       const data = snapshot.val();
       if(data) {
         setPlayers(data.players || []);
+        if(data.status === 'in-game') {
+          navigate('/game');
+        }
       } else {
         if(!isHost) {
           dispatch(setMessage('The host has terminated the lobby.'))
@@ -119,6 +122,24 @@ function LobbyPage() {
 
       return () => clearTimeout(timer);
     }
+  }
+
+  const handleStart = () => {
+    const gameRef = ref(database, 'active-games/' + gamepin);
+
+    get(gameRef)
+    .then((snapshot) => {
+      const data = snapshot.val();
+      if(data) {
+        set(gameRef, {
+          ...data,
+          status: 'in-game'
+        });
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
   }
     
   return (
@@ -202,6 +223,7 @@ function LobbyPage() {
           isHost
           ? <NextButton
               text='Start Game'
+              handleClick={ handleStart }
             />
           : <NextButton
               text='Waiting for Host'

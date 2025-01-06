@@ -16,9 +16,6 @@ function ErrorPage() {
                 break;
             case '404': 
                 setMessage("404 - Not Found");      
-                break;           
-            default:
-                setMessage("Unknown Error");
                 break;
         }
     // eslint-disable-next-line
