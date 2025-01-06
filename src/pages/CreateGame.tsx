@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { database } from '../database';
 import { set, ref } from 'firebase/database';
 import { useAppDispatch } from '../redux/hooks';
-import { setGamepin, setNickname } from '../redux/sessionSlice';
+import { setGamepin, setNickname } from '../redux/slices/sessionSlice';
 import NicknameSlide from '../components/NicknameSlide';
 import '../App.css'
 
@@ -15,7 +15,8 @@ function CreateGame() {
     const writeToDatabase = (gamepin: number) => {
         set(ref(database, 'active-games/' + gamepin), {
             gamepin: gamepin,
-            hostname: name
+            hostname: name,
+            players: [name]
         });
     }
 

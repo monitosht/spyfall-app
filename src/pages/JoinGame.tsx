@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { database } from '../database';
-import { get, ref, child } from 'firebase/database';
+import { get, ref, set } from 'firebase/database';
 import { useAppDispatch } from '../redux/hooks';
-import { setGamepin, setNickname } from '../redux/sessionSlice';
+import { setGamepin, setNickname } from '../redux/slices/sessionSlice';
 import NicknameSlide from '../components/NicknameSlide';
 import NextButton from '../components/NextButton';
 import BackButton from '../components/BackButton';
@@ -24,10 +24,30 @@ function JoinGame() {
   const handleClick = () => {
     dispatch(setNickname(name));
     dispatch(setGamepin(gamepinInput));
+
+    const gameRef = ref(database, 'active-games/' + gamepinInput);
+
+    get(gameRef)
+    .then((snapshot) => {
+      const data = snapshot.val();
+      if(data) {
+        const updatedPlayers = [...data.players, name];
+        set(gameRef, {
+          ...data,
+          players: updatedPlayers
+        });
+      }
+      setGameExists(snapshot.exists());
+    })
+    .catch((error) => {
+      console.error(error);
+    });
   }
 
   useEffect(() => { 
-    get(child(ref(database), 'active-games/' + gamepinInput))
+    const gameRef = ref(database, 'active-games/' + gamepinInput);
+
+    get(gameRef)
     .then((snapshot) => {
       setGameExists(snapshot.exists());
     })

@@ -13,7 +13,7 @@ const NextButton = (props: NextButtonProps) => {
             to={props.linkTo ? props.linkTo : '#'} 
         >
             <button 
-                className='w-full border rounded-md p-1.5 border-slate-400 bg-slate-300 hover:bg-slate-500 hover:text-white disabled:bg-slate-600 disabled:border-slate-700 disabled:hover:text-black'
+                className='min-w-28 w-auto border rounded-md p-2 border-slate-600 bg-slate-400 hover:bg-slate-500 hover:text-white  disabled:bg-slate-300 disabled:text-slate-500'
                 onClick={props.handleClick}
                 disabled={props.disabledCondition}
             >

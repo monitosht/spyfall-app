@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit'
-import sessionReducer from './sessionSlice'
+import sessionReducer from './slices/sessionSlice'
+import messageReducer from './slices/messageSlice'
 
 export const store = configureStore({
     reducer: {
         session: sessionReducer,
+        message: messageReducer,
     },
 });
 
