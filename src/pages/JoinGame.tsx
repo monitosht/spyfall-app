@@ -1,15 +1,20 @@
 import { useEffect, useState } from 'react';
+import { useParams } from 'react-router';
 import { database } from '../database';
 import { get, ref, set } from 'firebase/database';
 import { useAppDispatch } from '../redux/hooks';
-import { setGamepin, setNickname } from '../redux/slices/sessionSlice';
+import { setGamepin, setNickname, setPlayerId } from '../redux/slices/sessionSlice';
 import NicknameSlide from '../components/NicknameSlide';
 import NextButton from '../components/NextButton';
 import BackButton from '../components/BackButton';
+import Identity from '../../identity';
 import '../App.css'
 
 function JoinGame() {
   const dispatch = useAppDispatch();
+
+  const identity = new Identity();
+  const params = useParams();
 
   const [name, setName] = useState('');
   const [gamepinInput, setGamepinInput] = useState('');
@@ -17,32 +22,13 @@ function JoinGame() {
   const [gameExists, setGameExists] = useState(false);
   const [showNicknameSlide, setShowNicknameSlide] = useState(false);
 
-  const handleContinue = () => {
-    setShowNicknameSlide(true);
-  }
-
-  const handleClick = () => {
-    dispatch(setNickname(name));
-    dispatch(setGamepin(gamepinInput));
-
-    const gameRef = ref(database, 'active-games/' + gamepinInput);
-
-    get(gameRef)
-    .then((snapshot) => {
-      const data = snapshot.val();
-      if(data) {
-        const updatedPlayers = [...data.players, name];
-        set(gameRef, {
-          ...data,
-          players: updatedPlayers
-        });
-      }
-      setGameExists(snapshot.exists());
-    })
-    .catch((error) => {
-      console.error(error);
-    });
-  }
+  useEffect(() => {
+    if(params.gamepin) {
+      setGamepinInput(params.gamepin);
+      handleContinue();
+    }
+  // eslint-disable-next-line
+  }, []);
 
   useEffect(() => { 
     const gameRef = ref(database, 'active-games/' + gamepinInput);
@@ -55,6 +41,36 @@ function JoinGame() {
       console.error(error);
     });
   }, [gamepinInput]);
+
+  const handleContinue = () => {
+    setShowNicknameSlide(true);
+  }
+
+  const handleClick = () => {
+    identity.setNickname(name);
+
+    dispatch(setNickname(identity.nickname));
+    dispatch(setPlayerId(identity.playerId));
+    dispatch(setGamepin(gamepinInput));
+
+    const gameRef = ref(database, 'active-games/' + gamepinInput);
+
+    get(gameRef)
+    .then((snapshot) => {
+      const data = snapshot.val();
+      if(data) {
+        const updatedPlayers = [...data.players, identity];
+        set(gameRef, {
+          ...data,
+          players: updatedPlayers
+        });
+      }
+      setGameExists(snapshot.exists());
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
 
   const gamepinInputRender = () => {
     return (
@@ -85,7 +101,12 @@ function JoinGame() {
       <h1 className='text-6xl font-bold py-16'>Spyfall</h1>      
       {
         showNicknameSlide 
-        ? <NicknameSlide name={name} setName={setName} gamepin={Number(gamepinInput)} handleClick={handleClick}/>
+        ? <NicknameSlide 
+            name={name} 
+            setName={setName} 
+            gamepin={Number(gamepinInput)} 
+            handleClick={handleClick}
+          />
         : gamepinInputRender()
       }
     </div>

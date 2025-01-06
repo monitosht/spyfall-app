@@ -6,38 +6,30 @@ import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { setMessage } from '../redux/slices/messageSlice';
 import BackButton from '../components/BackButton';
 import NextButton from '../components/NextButton';
+import Identity from '../../identity';
 import '../App.css'
 
 function LobbyPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  const nickname = useAppSelector((state) => state.session.nickname);
+  const playerId = useAppSelector((state) => state.session.playerId);
   const gamepin = useAppSelector((state) => state.session.gamepin);
 
   const [isHost, setIsHost] = useState(false);
-  const [players, setPlayers] = useState<string[]>([]);
-  const [hostname, setHostname] = useState<string | null>(null);
+  const [players, setPlayers] = useState<Identity[]>([]);
+  const [hostId, setHostId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchHostname = async () => {
-      const snapshot = await get(ref(database, 'active-games/' + gamepin));
-      const data = snapshot.val();
-      if (data) {
-        setHostname(data.hostname);
-      }
-    };
+    if(!playerId || !gamepin) {
+      navigate('/error/403');
+    }
 
-    fetchHostname();
-  }, [gamepin]);
-
-  // change this to use a GUID instead of the host's nickname
-  useEffect(() => {
     const gameRef = ref(database, 'active-games/' + gamepin);
 
     get(gameRef)
     .then((snapshot) => {
-      if(snapshot.val().hostname === nickname) {
+      if(snapshot.val().host.playerId === playerId) {
         setIsHost(true);
       }
     })
@@ -46,6 +38,18 @@ function LobbyPage() {
     });
   // eslint-disable-next-line
   }, []);
+
+  useEffect(() => {
+    const fetchHostId = async () => {
+      const snapshot = await get(ref(database, 'active-games/' + gamepin));
+      const data = snapshot.val();
+      if (data) {
+        setHostId(data.host.playerId);
+      }
+    };
+
+    fetchHostId();
+  }, [gamepin]);
 
   useEffect(() => {
     const gameRef = ref(database, 'active-games/' + gamepin);
@@ -66,6 +70,18 @@ function LobbyPage() {
       listener();
     }
   }, [gamepin, isHost, dispatch, navigate]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      updateDatabase();
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    }
+  });
   
   const updateDatabase = () => {
     const gameRef = ref(database, 'active-games/' + gamepin);
@@ -78,7 +94,7 @@ function LobbyPage() {
         if(isHost) {
           set(gameRef, null);
         } else {
-          const updatedPlayers = data.players.filter((player: string) => player !== nickname);
+          const updatedPlayers = data.players.filter((player: Identity) => player.playerId !== playerId);
           update(gameRef, { players: updatedPlayers });
         }
       }
@@ -91,7 +107,8 @@ function LobbyPage() {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(gamepin)
+    //navigator.clipboard.writeText(gamepin)
+    navigator.clipboard.writeText(`${window.location.origin}/join/${gamepin}`);
 
     if(copied === false) {
       setCopied(true);
@@ -154,23 +171,27 @@ function LobbyPage() {
           <ul className='text-2xl text-white'>
             {players.map((player, index) => (
               <div className="flex mx-auto space-x-2 py-2 items-center justify-center">
-              {player === hostname ? (
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  fill="none" 
-                  viewBox="0 0 24 24" 
-                  stroke-width="1.5" 
-                  stroke="currentColor" 
-                  className="size-6"
-                >
-                  <path 
-                    stroke-linecap="round" 
-                    stroke-linejoin="round" 
-                    d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" 
-                  />
-                </svg>
-              ) : null}
-              {player === nickname ? <li key={index}><b>{player}</b> (you)</li> : <li key={index}>{player}</li>}
+              {
+                player.playerId === hostId 
+                ? (
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke-width="1.5" 
+                      stroke="currentColor" 
+                      className="size-6"
+                    >
+                      <path 
+                        stroke-linecap="round" 
+                        stroke-linejoin="round" 
+                        d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" 
+                      />
+                    </svg>
+                  ) 
+                : null
+              }
+              {player.playerId === playerId ? <li key={index}><b>{player.nickname}</b> (you)</li> : <li key={index}>{player.nickname}</li>}
               </div>
             ))}
           </ul>

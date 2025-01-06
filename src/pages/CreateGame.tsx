@@ -2,27 +2,34 @@ import { useState } from 'react';
 import { database } from '../database';
 import { set, ref } from 'firebase/database';
 import { useAppDispatch } from '../redux/hooks';
-import { setGamepin, setNickname } from '../redux/slices/sessionSlice';
+import { setGamepin, setNickname, setPlayerId } from '../redux/slices/sessionSlice';
 import NicknameSlide from '../components/NicknameSlide';
+import Identity from '../../identity';
 import '../App.css'
 
 function CreateGame() {
     const dispatch = useAppDispatch();
 
     const [name, setName] = useState('');
+    const identity = new Identity();
+
     const gamepin = Math.floor(Math.random() * 8999 + 1000);
     
     const writeToDatabase = (gamepin: number) => {
         set(ref(database, 'active-games/' + gamepin), {
             gamepin: gamepin,
-            hostname: name,
-            players: [name]
+            host: identity,
+            players: [identity]
         });
     }
 
     const handleClick = () => {
-        dispatch(setNickname(name));
+        identity.setNickname(name);
+
+        dispatch(setNickname(identity.nickname));
+        dispatch(setPlayerId(identity.playerId));
         dispatch(setGamepin(gamepin));
+        
         writeToDatabase(gamepin);
     }
     

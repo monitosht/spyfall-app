@@ -2,11 +2,13 @@ import { createSlice } from '@reduxjs/toolkit'
 
 interface SessionState {
     nickname: string;
+    playerId: string;
     gamepin: string;
 }
 
 const initialState = {
     nickname: '',
+    playerId: '',
     gamepin: '',
 }
 
@@ -17,6 +19,9 @@ const sessionSlice = createSlice({
         setNickname: (state, action) => {
             state.nickname = action.payload
         },
+        setPlayerId: (state, action) => {
+            state.playerId = action.payload
+        },
         setGamepin: (state, action) => {
             state.gamepin = action.payload
         },
@@ -26,5 +31,5 @@ const sessionSlice = createSlice({
     },
 });
 
-export const { setNickname, setGamepin, resetDefaults } = sessionSlice.actions
+export const { setNickname, setPlayerId, setGamepin, resetDefaults } = sessionSlice.actions
 export default sessionSlice.reducer
