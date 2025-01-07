@@ -21,9 +21,9 @@ createRoot(document.getElementById('root')!).render(
         <Route path='/join' element={<JoinGame />} />
         <Route path='/join/:gamepin' element={<JoinGame />} />
         <Route path='/lobby/:gamepin' element={<LobbyPage />} />
-        <Route path='/game' element={<GamePage />} />
-        <Route path='*' element={<ErrorPage />} />
+        <Route path='/game/:gamepin' element={<GamePage />} />
         <Route path='/error/:code' element={<ErrorPage />} />
+        <Route path='*' element={<ErrorPage />} />
       </Routes>
       </BrowserRouter>
     </Provider>

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import { database } from '../database';
 import { get, ref, set } from 'firebase/database';
 import { useAppDispatch } from '../redux/hooks';
 import { setGamepin, setNickname, setPlayerId } from '../redux/slices/sessionSlice';
+import { setMessage } from '../redux/slices/messageSlice';
 import NicknameSlide from '../components/NicknameSlide';
 import NextButton from '../components/NextButton';
 import BackButton from '../components/BackButton';
@@ -11,10 +12,11 @@ import Identity from '../../identity';
 import '../App.css'
 
 function JoinGame() {
-  const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch();  
+  const navigate = useNavigate();
 
   const identity = new Identity();
-  const params = useParams();
+  const { gamepin } = useParams<{ gamepin:string }>();
 
   const [name, setName] = useState('');
   const [gamepinInput, setGamepinInput] = useState('');
@@ -23,9 +25,9 @@ function JoinGame() {
   const [showNicknameSlide, setShowNicknameSlide] = useState(false);
 
   useEffect(() => {
-    if(params.gamepin) {
-      setGamepinInput(params.gamepin);
-      handleContinue();
+    if(gamepin) {
+      setGamepinInput(gamepin);
+      handleContinue(gamepin);
     }
   // eslint-disable-next-line
   }, []);
@@ -42,8 +44,28 @@ function JoinGame() {
     });
   }, [gamepinInput]);
 
-  const handleContinue = () => {
-    setShowNicknameSlide(true);
+  const handleContinue = (gamepin:string) => {
+    const gameRef = ref(database, 'active-games/' + gamepin);
+
+    console.log(gameRef);
+
+    get(gameRef)
+    .then((snapshot) => {
+      const data = snapshot.val();
+
+      if(data) {
+        if(data.status !== 'lobby') {
+          dispatch(setMessage('The game has already been started for this lobby.'));
+          navigate('/');
+          return;
+        } else {
+          setShowNicknameSlide(true);
+        }
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
   }
 
   const handleClick = () => {
@@ -58,14 +80,15 @@ function JoinGame() {
     get(gameRef)
     .then((snapshot) => {
       const data = snapshot.val();
+
       if(data) {
         const updatedPlayers = [...data.players, identity];
+
         set(gameRef, {
           ...data,
           players: updatedPlayers
         });
       }
-      setGameExists(snapshot.exists());
     })
     .catch((error) => {
       console.error(error);
@@ -84,8 +107,14 @@ function JoinGame() {
         </div>
         <div className='flex justify-items-center flex-col w-28 space-y-4 mx-auto'>
           <NextButton
-            handleClick={handleContinue}
-            disabledCondition={gameExists && (gamepinInput.length === 4) && (/^[0-9\b]+$/.test(gamepinInput)) && (/\S/.test(gamepinInput)) ? false : true}
+            handleClick={() => handleContinue(gamepinInput)}
+            disabledCondition=
+            {
+              gameExists && 
+              (gamepinInput.length === 4) && 
+              (/^[0-9\b]+$/.test(gamepinInput)) && 
+              (/\S/.test(gamepinInput)) ? false : true
+            }
           />          
           <BackButton 
             linkTo="/"

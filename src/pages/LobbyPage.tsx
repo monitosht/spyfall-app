@@ -60,7 +60,7 @@ function LobbyPage() {
       if(data) {
         setPlayers(data.players || []);
         if(data.status === 'in-game') {
-          navigate('/game');
+          navigate(`/game/${gamepin}`);
         }
       } else {
         if(!isHost) {

@@ -10,10 +10,19 @@ function App() {
   const message = useAppSelector((state) => state.message.message);
 
   useEffect(() => {
-    dispatch(resetDefaults());
+    dispatch(resetDefaults());    
+    
+    if(message) {
+      const timer = setTimeout(() => {
+        dispatch(clearMessage());
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
   // eslint-disable-next-line
   }, []);
 
+  /*
   useEffect(() => {
     if(message) {
       const timer = setTimeout(() => {
@@ -23,6 +32,7 @@ function App() {
       return () => clearTimeout(timer);
     }
   }, [dispatch, message]);
+  */
 
   return (
     <>

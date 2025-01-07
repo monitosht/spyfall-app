@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
-import BackButton from "../components/BackButton";
-import { get, onValue, ref, set, update } from "firebase/database";
-import { database } from "../database";
-import Identity from "../../identity";
-import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { useNavigate } from "react-router";
+import { database } from "../database";
+import { get, onValue, ref, set, update } from "firebase/database";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { setMessage } from "../redux/slices/messageSlice";
+import BackButton from "../components/BackButton";
+import Identity from "../../identity";
 
 function GamePage() {
-    const TIMER_DURATION = 300;
+    const TIMER_DURATION = 600; // 10 minute timer
 
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
@@ -18,6 +18,13 @@ function GamePage() {
     const gamepin = useAppSelector((state) => state.session.gamepin);
 
     const [timer, setTimer] = useState<number>(0);
+
+    useEffect(() => {
+        if(!playerId || !gamepin) {
+          navigate('/error/403');
+        }
+    // eslint-disable-next-line
+    }, []);
 
     useEffect(() => {
         const gameRef = ref(database, 'active-games/' + gamepin);
@@ -96,7 +103,7 @@ function GamePage() {
     
     return (
         <div>
-            <h1 className="text-6xl font-bold">Gameplay Page</h1>
+            <h1 className="text-6xl font-bold">Spyfall</h1>
             <h1 className="text-4xl py-14">Time Remaining: {formatTimeString(timer)}</h1>
             <BackButton 
                 text="Exit"
