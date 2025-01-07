@@ -25,7 +25,8 @@ const locations = [
     "Space Station",
     "Submarine",
     "Supermarket",
-    "University"
+    "University",
+    "Mall",
 ]
 
 export default locations;

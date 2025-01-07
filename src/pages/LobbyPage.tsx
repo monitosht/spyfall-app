@@ -146,8 +146,7 @@ function LobbyPage() {
     updateDatabaseOnStart(startTime, location, updatedPlayers);
   }
 
-  const updateDatabaseOnStart = (startTime:number, location:string, updatedPlayers:Identity[]) => {    
-    console.log(updatedPlayers);
+  const updateDatabaseOnStart = (startTime:number, location:string, updatedPlayers:Identity[]) => {
     const gameRef = ref(database, 'active-games/' + gamepin);
 
     get(gameRef)

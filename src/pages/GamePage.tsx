@@ -23,6 +23,9 @@ function GamePage() {
     const [role, setRole] = useState<string>('');    
     const [timer, setTimer] = useState<number>(0);
 
+    const [gridCols, setGridCols] = useState<string>('');
+    const [gridGapX, setGridGapX] = useState<string>('');
+
     const [crossedOutNames, setCrossedOutNames] = useState<number[]>([]);
     const [crossedOutLocations, setCrossedOutLocations] = useState<number[]>([]);
 
@@ -84,7 +87,7 @@ function GamePage() {
 
     useEffect(() => {
         const handleBeforeUnload = () => {
-            updateDatabase();
+            updateDatabaseOnExit();
         }
 
         window.addEventListener('beforeunload', handleBeforeUnload);
@@ -94,7 +97,7 @@ function GamePage() {
         }
     });
 
-    const updateDatabase = () => {
+    const updateDatabaseOnExit = () => {
         const gameRef = ref(database, 'active-games/' + gamepin);
 
         get(gameRef)
@@ -131,8 +134,10 @@ function GamePage() {
         return `${str_pad_left(minutes.toString(), '0', 2)}:${str_pad_left(seconds.toString(), '0', 2)}`;
     }
 
-    const gridCols = `grid-cols-${Math.min(players.length, 4)}`;
-    const gapX = `gap-x-${12 * (Math.min(players.length, 4))}`;
+    useEffect(() => {
+        setGridCols(`grid-cols-${Math.min(players.length, 4)}`);
+        setGridGapX(`gap-x-${Math.min((12 * players.length), 48)}`);
+    }, [players]);
 
     const crossoutName = (index:number) => {
         setCrossedOutNames((prev) => {
@@ -172,7 +177,7 @@ function GamePage() {
                 </div>)
             }   
             <p className="text-3xl pt-6 underline">Players</p>
-            <div className={`grid ${gridCols} gap-y-8 ${gapX} w-96 justify-center mx-auto py-12 pb-24`}>
+            <div className={`grid ${gridCols} ${gridGapX} gap-y-8 w-96 justify-center mx-auto py-12 pb-24`}>
             {
                 players.map((player: Identity, index:number) => {
                     return (
@@ -197,7 +202,7 @@ function GamePage() {
                         return (
                             <div className="flex justify-center items-center space-x-4">
                                 <button 
-                                    className={`text-xl min-w-36 p-1 rounded border border-black
+                                    className={`text-xl min-w-40 p-1 rounded border border-black
                                     ${crossedOutLocations.includes(index) ? 'line-through' : ''}`}
                                     onClick={() => crossoutLocation(index)}
                                 >
@@ -208,22 +213,11 @@ function GamePage() {
                     })
                 }
             </div>
-            {
-            /*<div className="flex justify-center items-center space-x-4">
-            <button className={`text-xl min-w-36 p-1 rounded border border-black`}>Monitosh</button></div>
-            <div className="flex justify-center items-center space-x-4">
-            <button className={`text-xl min-w-36 p-1 rounded border border-black`}>Monitosh</button></div>
-            <div className="flex justify-center items-center space-x-4">
-            <button className={`text-xl min-w-36 p-1 rounded border border-black`}>Monitosh</button></div>
-            <div className="flex justify-center items-center space-x-4">
-            <button className={`text-xl min-w-36 p-1 rounded border border-black`}>Monitosh</button></div>
-            */
-            }
             <div>
                 <BackButton 
                     text="Exit"
                     linkTo="/" 
-                    handleClick={updateDatabase}
+                    handleClick={updateDatabaseOnExit}
                 />
             </div>
         </div>
