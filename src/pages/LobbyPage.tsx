@@ -8,6 +8,7 @@ import { setMessage } from '../redux/slices/messageSlice';
 import BackButton from '../components/BackButton';
 import NextButton from '../components/NextButton';
 import Identity from '../../identity';
+import locations from '../../locations';
 import '../App.css'
 
 function LobbyPage() {
@@ -77,7 +78,7 @@ function LobbyPage() {
 
   useEffect(() => {
     const handleBeforeUnload = () => {
-      updateDatabase();
+      updateDatabaseOnExit();
     }
 
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -87,7 +88,7 @@ function LobbyPage() {
     }
   });
   
-  const updateDatabase = () => {
+  const updateDatabaseOnExit = () => {
     const gameRef = ref(database, 'active-games/' + gamepin);
 
     get(gameRef)
@@ -126,8 +127,28 @@ function LobbyPage() {
   }
 
   const handleStart = () => {
-    const gameRef = ref(database, 'active-games/' + gamepin);
     const startTime = Math.floor(Date.now() / 1000);
+
+    // Determine a location by randomly selecting one from the provided list of locations
+    const locationIndex = Math.floor(Math.random() * locations.length);
+    const location = locations[locationIndex];
+
+    // Determine the spy by randomly selecting one of the players present in the lobby
+    const spyIndex = Math.floor(Math.random() * players.length);
+    const updatedPlayers = players.map((player, idx) => {
+        if(idx === spyIndex) {
+            return { ...player, role: 'Spy' } as Identity;
+        } else {
+            return { ...player, role: 'Civilian' } as Identity;
+        }
+    });
+
+    updateDatabaseOnStart(startTime, location, updatedPlayers);
+  }
+
+  const updateDatabaseOnStart = (startTime:number, location:string, updatedPlayers:Identity[]) => {    
+    console.log(updatedPlayers);
+    const gameRef = ref(database, 'active-games/' + gamepin);
 
     get(gameRef)
     .then((snapshot) => {
@@ -135,8 +156,10 @@ function LobbyPage() {
       if(data) {
         set(gameRef, {
           ...data,
+          players: updatedPlayers,
           status: 'in-game',
-          startTime: startTime
+          startTime: startTime,
+          location: location
         });
       }
     })
@@ -144,7 +167,7 @@ function LobbyPage() {
       console.error(error);
     });
   }
-    
+
   return (
     <div className='h-screen flex flex-col justify-center items-center'>
       <img src='/spy_icon.svg' className='w-48 h-48'></img>
@@ -226,7 +249,7 @@ function LobbyPage() {
           isHost
           ? <NextButton
               text='Start Game'
-              handleClick={ handleStart }
+              handleClick={handleStart}
             />
           : <NextButton
               text='Waiting for Host'
@@ -236,7 +259,7 @@ function LobbyPage() {
         <BackButton
           text='Exit'
           linkTo='/'
-          handleClick={ updateDatabase }
+          handleClick={updateDatabaseOnExit}
         />
       </div>
     </div>
