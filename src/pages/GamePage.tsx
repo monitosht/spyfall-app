@@ -1,14 +1,91 @@
 import { useEffect, useState } from "react";
 import BackButton from "../components/BackButton";
+import { get, onValue, ref, set, update } from "firebase/database";
+import { database } from "../database";
+import Identity from "../../identity";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { useNavigate } from "react-router";
+import { setMessage } from "../redux/slices/messageSlice";
 
 function GamePage() {
-    const [timer, setTimer] = useState(300);
+    const TIMER_DURATION = 300;
+
+    const dispatch = useAppDispatch();
+    const navigate = useNavigate();
+    
+    const playerId = useAppSelector((state) => state.session.playerId);
+    const isHost = useAppSelector((state) => state.session.isHost);
+    const gamepin = useAppSelector((state) => state.session.gamepin);
+
+    const [timer, setTimer] = useState<number>(0);
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            setTimer(timer - 1);
-        }, 1000);
-        return () => clearInterval(interval);
+        const gameRef = ref(database, 'active-games/' + gamepin);
+
+        const listener = onValue(gameRef, (snapshot) => {
+            const data = snapshot.val();
+
+            if(data){
+                if(data.startTime)
+                {
+                    const currentTime = Math.floor(Date.now() / 1000);
+                    const timeElapsed = currentTime - data.startTime;
+                    setTimer(TIMER_DURATION - timeElapsed)
+                }
+            } else {
+                if(!isHost) {
+                    dispatch(setMessage('The host has terminated the lobby.'))
+                }
+                navigate('/');
+            }
+        });
+
+        return () => {
+            listener();
+        }
+    }, [gamepin, isHost, dispatch, navigate]);
+
+    useEffect(() => {
+        const handleBeforeUnload = () => {
+            updateDatabase();
+        }
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        }
+    });
+
+    const updateDatabase = () => {
+        const gameRef = ref(database, 'active-games/' + gamepin);
+
+        get(gameRef)
+        .then((snapshot) => {
+            const data = snapshot.val();
+
+            if(data) {
+                if(isHost) {
+                    set(gameRef, null);
+                } else {
+                    const updatedPlayers = data.players.filter((player: Identity) => player.playerId !== playerId);
+                    update(gameRef, { players: updatedPlayers });
+                }
+            }
+        })
+        .catch((error) => {
+            console.error(error);
+        });
+    }
+
+    useEffect(() => {
+        if(timer > 0) {
+            const interval = setInterval(() => {
+                setTimer((prevTimer) => prevTimer - 1);
+            }, 1000);
+
+            return () => clearInterval(interval);
+        }
     }, [timer]);
 
     const formatTimeString = (time: number) => {
@@ -20,10 +97,11 @@ function GamePage() {
     return (
         <div>
             <h1 className="text-6xl font-bold">Gameplay Page</h1>
-            <h1 className="text-4xl py-14">{formatTimeString(timer)}</h1>
+            <h1 className="text-4xl py-14">Time Remaining: {formatTimeString(timer)}</h1>
             <BackButton 
                 text="Exit"
                 linkTo="/" 
+                handleClick={updateDatabase}
             />
         </div>
     );

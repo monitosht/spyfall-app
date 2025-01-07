@@ -3,12 +3,14 @@ import { createSlice } from '@reduxjs/toolkit'
 interface SessionState {
     nickname: string;
     playerId: string;
+    isHost: boolean;
     gamepin: string;
 }
 
 const initialState = {
     nickname: '',
     playerId: '',
+    isHost: false,
     gamepin: '',
 }
 
@@ -22,6 +24,9 @@ const sessionSlice = createSlice({
         setPlayerId: (state, action) => {
             state.playerId = action.payload
         },
+        setIsHost: (state, action) => {
+            state.isHost = action.payload
+        },
         setGamepin: (state, action) => {
             state.gamepin = action.payload
         },
@@ -31,5 +36,5 @@ const sessionSlice = createSlice({
     },
 });
 
-export const { setNickname, setPlayerId, setGamepin, resetDefaults } = sessionSlice.actions
+export const { setNickname, setPlayerId, setIsHost, setGamepin, resetDefaults } = sessionSlice.actions
 export default sessionSlice.reducer

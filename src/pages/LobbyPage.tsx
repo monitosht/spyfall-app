@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { database } from '../database';
 import { get, onValue, ref, set, update } from 'firebase/database';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
+import { setIsHost } from '../redux/slices/sessionSlice';
 import { setMessage } from '../redux/slices/messageSlice';
 import BackButton from '../components/BackButton';
 import NextButton from '../components/NextButton';
@@ -14,9 +15,9 @@ function LobbyPage() {
   const navigate = useNavigate();
 
   const playerId = useAppSelector((state) => state.session.playerId);
+  const isHost = useAppSelector((state) => state.session.isHost);
   const gamepin = useAppSelector((state) => state.session.gamepin);
 
-  const [isHost, setIsHost] = useState(false);
   const [players, setPlayers] = useState<Identity[]>([]);
   const [hostId, setHostId] = useState<string | null>(null);
 
@@ -30,7 +31,7 @@ function LobbyPage() {
     get(gameRef)
     .then((snapshot) => {
       if(snapshot.val().host.playerId === playerId) {
-        setIsHost(true);
+        dispatch(setIsHost(true));
       }
     })
     .catch((error) => {
@@ -126,6 +127,7 @@ function LobbyPage() {
 
   const handleStart = () => {
     const gameRef = ref(database, 'active-games/' + gamepin);
+    const startTime = Math.floor(Date.now() / 1000);
 
     get(gameRef)
     .then((snapshot) => {
@@ -133,7 +135,8 @@ function LobbyPage() {
       if(data) {
         set(gameRef, {
           ...data,
-          status: 'in-game'
+          status: 'in-game',
+          startTime: startTime
         });
       }
     })
