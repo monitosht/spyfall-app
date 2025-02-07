@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Route, Routes } from 'react-router'
+import { HashRouter, Route, Routes } from 'react-router'
 import { Provider } from 'react-redux'
 import store from './redux/store.ts'
 import './index.css'
@@ -14,7 +14,7 @@ import GamePage from './pages/GamePage.tsx'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Provider store={store}>
-      <BrowserRouter>
+      <HashRouter>
       <Routes>
         <Route path='/' element={<App />} />
         <Route path='/create' element={<CreateGame />} />
@@ -25,7 +25,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path='/error/:code' element={<ErrorPage />} />
         <Route path='*' element={<ErrorPage />} />
       </Routes>
-      </BrowserRouter>
+      </HashRouter>
     </Provider>
   </StrictMode>
 )
