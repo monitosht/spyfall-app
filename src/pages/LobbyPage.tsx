@@ -112,8 +112,7 @@ function LobbyPage() {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = () => {
-    //navigator.clipboard.writeText(gamepin)
-    navigator.clipboard.writeText(`${window.location.origin}/join/${gamepin}`);
+    navigator.clipboard.writeText(`${window.location.origin}/spyfall-app/#/join/${gamepin}`);
 
     if(copied === false) {
       setCopied(true);
@@ -169,7 +168,7 @@ function LobbyPage() {
 
   return (
     <div className='h-screen flex flex-col justify-center items-center'>
-      <img src='/spy_icon.svg' className='w-48 h-48'></img>
+      <img src='./spy_icon.svg' className='w-48 h-48'></img>
       <h1 className='text-6xl font-bold py-16'>Spyfall</h1>
       <div className='flex flex-col justify-center min-w-60 pb-6 space-y-4'>
         <div className='flex justify-between space-x-2 pb-4 mx-auto'>
