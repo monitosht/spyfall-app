@@ -36,7 +36,7 @@ function CreateGame() {
     
   return (
     <div className='h-screen flex flex-col justify-center items-center'>
-      <img src='./spy_icon.svg' className='w-48 h-48'></img>
+      <img src='spyfall-app/spy_icon.svg' className='w-48 h-48'></img>
       <h1 className='text-6xl font-bold py-16'>Spyfall</h1>
       <NicknameSlide 
         name={name} 
