@@ -37,7 +37,7 @@ function App() {
   return (
     <>
       <div className='h-screen flex flex-col justify-center items-center'>
-        <img src='/spyfall-app/#/spy_icon.svg' className='w-48 h-48'></img>
+        <img src='/spyfall-app/spy_icon.svg' className='w-48 h-48'></img>
         <h1 className='text-6xl font-bold py-16'>Spyfall</h1>
         <div className='flex justify-items-center flex-col w-28 space-y-4 mx-auto mb-8'>
           <NavLink to='/create'>

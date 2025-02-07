@@ -167,12 +167,12 @@ function GamePage() {
                 role !== 'Spy'
                 ? 
                 (<div className="flex justify-center items-center space-x-4 mx-auto">
-                    <img src='spyfall-app/location.svg' className='w-10 h-10'></img>
+                    <img src='/spyfall-app/location.svg' className='w-10 h-10'></img>
                     <h1 className="text-4xl py-12">{location}</h1>
                 </div>)
                 : 
                 (<div className="flex justify-center items-center space-x-4 mx-auto">
-                    <img src='spyfall-app/spy_icon.svg' className='w-10 h-10'></img>
+                    <img src='/spyfall-app/spy_icon.svg' className='w-10 h-10'></img>
                     <h1 className="text-4xl py-12">You are the Spy</h1>
                 </div>)
             }   
